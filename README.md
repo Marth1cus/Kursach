@@ -41,6 +41,25 @@ flutter run -d chrome
 Параметры сервера: `go run . -addr :8080 -db shoes.db -web ../frontend/build/web`.
 Чтобы вернуть базу к исходному состоянию, остановите сервер и удалите файл `backend/shoes.db`.
 
+## Запуск на Windows
+
+1. Установите **Git**: https://git-scm.com/download/win (он нужен и для Flutter).
+2. Установите **Go** (msi-установщик `windows-amd64`): https://go.dev/dl/
+3. Установите **Flutter**: скачайте zip со страницы https://docs.flutter.dev/get-started/install/windows,
+   распакуйте в `C:\flutter` (не в `Program Files` и не в путь с русскими буквами или пробелами)
+   и добавьте `C:\flutter\bin` в переменную `Path`
+   («Пуск» → «Изменение системных переменных среды» → «Переменные среды» → `Path` → «Создать»).
+4. Откройте **новое** окно командной строки и проверьте: `go version`, `flutter --version`.
+5. Скачайте проект в папку без русских букв, например `C:\projects\Kursach`:
+   ```bat
+   git clone -b claude/sports-shoe-catalog-iizdj7 https://github.com/marth1cus/kursach.git C:\projects\Kursach
+   ```
+6. Запустите **`start.bat`** двойным щелчком. При первом запуске он соберёт веб-версию (1–2 минуты),
+   запустит сервер и откроет http://localhost:8080. Если брандмауэр Windows спросит про доступ — нажмите «Разрешить».
+
+Для режима разработки откройте два окна `cmd`: в первом `cd backend` → `go run .`, во втором `cd frontend` → `flutter run -d chrome` (или `-d edge`).
+После изменения кода Flutter удалите папку `frontend\build`, чтобы `start.bat` пересобрал веб-версию.
+
 ## Тестовые учётные записи
 
 | Роль | Логин | Пароль |
