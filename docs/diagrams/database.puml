@@ -1,0 +1,78 @@
+@startuml database
+!pragma layout smetana
+skinparam shadowing false
+skinparam defaultFontName Arial
+hide circle
+skinparam linetype ortho
+title Структура базы данных (SQLite)
+
+entity users {
+  * id : INTEGER <<PK>>
+  --
+  * login : TEXT <<UNIQUE>>
+  * password_hash : TEXT
+  * name : TEXT
+  * role : TEXT ('client' | 'admin')
+  * blocked : INTEGER (0/1)
+  * created_at : TEXT
+}
+entity sessions {
+  * token : TEXT <<PK>>
+  --
+  * user_id : INTEGER <<FK>>
+  * created_at : TEXT
+}
+entity shoes {
+  * id : INTEGER <<PK>>
+  --
+  * name, brand : TEXT
+  * category : TEXT
+  * gender : TEXT ('men'|'women'|'unisex')
+  * price : INTEGER
+  old_price : INTEGER
+  color, material, surface : TEXT
+  sizes : TEXT ("40,41,42")
+  weight : INTEGER
+  description, image_url : TEXT
+  * in_stock : INTEGER
+  * deleted : INTEGER
+  deleted_at : TEXT
+  created_at, updated_at : TEXT
+}
+entity favorites {
+  * user_id : INTEGER <<PK, FK>>
+  * shoe_id : INTEGER <<PK, FK>>
+  --
+  created_at : TEXT
+}
+entity reviews {
+  * id : INTEGER <<PK>>
+  --
+  * shoe_id : INTEGER <<FK>>
+  * user_id : INTEGER <<FK>>
+  * rating : INTEGER (1..5)
+  text : TEXT
+  created_at : TEXT
+}
+entity orders {
+  * id : INTEGER <<PK>>
+  --
+  * user_id : INTEGER <<FK>>
+  * shoe_id : INTEGER <<FK>>
+  * size, phone : TEXT
+  comment : TEXT
+  * status : TEXT ('pending'|'approved'|'rejected')
+  admin_comment : TEXT
+  * seen_by_admin : INTEGER
+  * seen_by_client : INTEGER
+  created_at, updated_at : TEXT
+}
+
+users ||--o{ sessions
+users ||--o{ favorites
+shoes ||--o{ favorites
+users ||--o{ reviews
+shoes ||--o{ reviews
+users ||--o{ orders
+shoes ||--o{ orders
+@enduml

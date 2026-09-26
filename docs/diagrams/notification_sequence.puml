@@ -1,0 +1,34 @@
+@startuml notification_sequence
+skinparam shadowing false
+skinparam defaultFontName Arial
+title Сценарий: заявка клиента и уведомление администратора
+
+actor Клиент
+participant "Flutter\n(клиент)" as FC
+participant "Go API" as API
+database SQLite as DB
+participant "Flutter\n(администратор)" as FA
+actor Администратор
+
+Клиент -> FC : выбирает размер,\n«Забронировать»
+FC -> API : POST /api/orders
+API -> DB : INSERT orders (status='pending',\nseen_by_admin=0)
+API --> FC : 201 Created
+FC --> Клиент : «Заявка отправлена»
+
+loop каждые 8 секунд
+  FA -> API : GET /api/notifications
+  API -> DB : COUNT(*) WHERE seen_by_admin=0
+  API --> FA : {"unread": 1}
+end
+FA --> Администратор : колокольчик мигает,\nбейдж «1»
+Администратор -> FA : нажимает на колокольчик
+FA -> API : GET /api/orders
+FA -> API : POST /api/notifications/read
+Администратор -> FA : «Одобрить»
+FA -> API : PUT /api/orders/{id}/approve
+API -> DB : status='approved',\nseen_by_client=0
+FC -> API : GET /api/notifications
+API --> FC : {"unread": 1}
+FC --> Клиент : уведомление об ответе
+@enduml

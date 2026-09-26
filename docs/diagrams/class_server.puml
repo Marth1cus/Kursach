@@ -1,0 +1,87 @@
+@startuml class_server
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam class {
+  BackgroundColor #F2F4FF
+  BorderColor #1E2A78
+  ArrowColor #FF5A1F
+}
+title Диаграмма классов (типов) серверной части (Go)
+
+class App {
+  +DB: *sql.DB
+  +RegisterRoutes(mux)
+  -auth(next): HandlerFunc
+  -admin(next): HandlerFunc
+  -- авторизация --
+  +register() / login() / me() / logout()
+  -- каталог --
+  +listShoes() / getShoe() / meta()
+  +createShoe() / updateShoe()
+  +deleteShoe() / restoreShoe() / purgeShoe()
+  -- пользователи --
+  +addFavorite() / removeFavorite()
+  +listReviews() / addReview() / deleteReview()
+  +createOrder() / listOrders() / decideOrder() / cancelOrder()
+  +notifications() / readNotifications()
+  +listUsers() / setBlocked() / stats()
+}
+class User {
+  +ID: int64
+  +Login: string
+  +Name: string
+  +Role: string
+  +Blocked: bool
+}
+class Shoe {
+  +ID: int64
+  +Name, Brand: string
+  +Category, Gender: string
+  +Price, OldPrice: int
+  +Sizes: []string
+  +InStock, Deleted: bool
+  +Rating: float64
+  +IsFavorite: bool
+}
+class shoeInput {
+  +validate(): string
+}
+class Review {
+  +ID, ShoeID, UserID: int64
+  +Rating: int
+  +Text: string
+}
+class Order {
+  +ID, UserID, ShoeID: int64
+  +Size, Phone, Comment: string
+  +Status: string
+  +AdminComment: string
+  +IsNew: bool
+}
+class apiError {
+  +Error: string
+}
+class "util.go" as util <<functions>> {
+  +writeJSON(w, status, v)
+  +writeError(w, status, msg)
+  +serverError(w, err)
+  +decodeJSON(w, r, dst): bool
+  +pathID(w, r): int64
+}
+class "db.go" as db <<functions>> {
+  +OpenDB(path): *sql.DB
+  -seed(db)
+  +hashPassword(p)
+}
+
+App ..> User
+App ..> Shoe
+App ..> shoeInput
+App ..> Review
+App ..> Order
+App ..> util
+util ..> apiError
+App ..> db
+@enduml

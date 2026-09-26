@@ -1,0 +1,27 @@
+@startuml deployment
+skinparam shadowing false
+skinparam defaultFontName Arial
+title Диаграмма развёртывания
+
+node "Компьютер пользователя" as pc {
+  node "Веб-браузер (Chrome / Edge / Firefox)" as browser {
+    artifact "Flutter Web приложение\n(main.dart.js + CanvasKit)" as app
+    database "localStorage\n(SharedPreferences):\nтокен, тема, история поиска" as ls
+  }
+}
+
+node "Сервер (localhost:8080)" as server {
+  component "Go HTTP-сервер\n(net/http)" as go {
+    component "REST API /api/*" as api
+    component "Раздача статики\n/ и /images/*" as stat
+  }
+  database "SQLite\nshoes.db" as sqlite
+  folder "static/images" as img
+}
+
+app --> api : HTTP/JSON\nAuthorization: Bearer <token>
+app --> stat : HTTP GET
+app ..> ls
+api --> sqlite : database/sql\n(modernc.org/sqlite)
+stat --> img
+@enduml
