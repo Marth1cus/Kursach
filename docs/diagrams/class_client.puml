@@ -1,175 +1,196 @@
 @startuml class_client
 !pragma layout smetana
-skinparam classAttributeIconSize 0
-skinparam shadowing false
-skinparam defaultFontName Arial
-skinparam class {
-  BackgroundColor #FFF7F2
-  BorderColor #FF5A1F
-  ArrowColor #1E2A78
-}
-title Диаграмма классов клиентской части (Flutter)
+skinparam dpi 150
 
-package models {
-  class Shoe {
-    +id: int
-    +name: String
-    +brand: String
-    +category: String
-    +gender: String
-    +price: int
-    +oldPrice: int
-    +sizes: List<String>
-    +imageUrl: String
-    +inStock: bool
-    +rating: double
-    +isFavorite: bool
-    +fromJson(json): Shoe
-    +toJson(): Map
-    +copyWith(...): Shoe
-  }
-  class ShoeFilter {
-    +query: String
-    +category: String?
-    +gender: String?
-    +brands: Set<String>
-    +minPrice / maxPrice: int?
-    +size: String?
-    +inStockOnly: bool
-    +sort: String
-    +toQuery(): Map
-    +activeCount: int
-  }
-  class User {
-    +id: int
-    +login: String
-    +name: String
-    +role: String
-    +blocked: bool
-    +isAdmin: bool
-  }
-  class Order {
-    +id: int
-    +shoeId: int
-    +size: String
-    +phone: String
-    +status: String
-    +adminComment: String
-    +isNew: bool
-  }
-  class Review {
-    +id: int
-    +userName: String
-    +rating: int
-    +text: String
-  }
+class SplashScreen {
+  -_start()
+}
+class LoginScreen {
+  -_submit()
+}
+class RegisterScreen {
+  -_submit()
+}
+class HomeScreen {
+  -_loadMeta()
+  -_loadHistory()
+  -_applyFilter()
+  -_onSearchChanged()
+  -_openFilters()
+  -_toggleFavorite()
+}
+class ShoeDetailScreen {
+  -_load()
+  -_toggleFavorite()
+  -_book()
+  -_addReview()
+  -_deleteReview()
+}
+class FavoritesScreen {
+  -_remove()
+  -_open()
+}
+class OrdersScreen {
+  -_load()
+  -_decide()
+  -_cancel()
+}
+class ProfileScreen {
+  -_loadStats()
+}
+class FilterSheet {
+  -_reset()
+  -_apply()
+}
+class NotificationBell
+
+class AuthProvider {
+  +User? user
+  +bool isAdmin
+  +tryRestoreSession()
+  +login()
+  +register()
+  +logout()
+}
+class NotificationProvider {
+  +int unread
+  +start()
+  +stop()
+  +refresh()
+  +markAllRead()
+}
+class ThemeProvider {
+  +ThemeMode mode
+  +load()
+  +setMode()
+}
+class ApiService {
+  -String? _token
+  +login()
+  +register()
+  +me()
+  +getShoes()
+  +getShoe()
+  +setFavorite()
+  +getReviews()
+  +createOrder()
+  +getOrders()
+  +getUnreadCount()
+  -_send()
+}
+class StorageService {
+  +getToken()
+  +saveToken()
+  +clearToken()
+  +getTheme()
+  +saveTheme()
+  +getSearchHistory()
+  +addSearchQuery()
+}
+class ApiException {
+  +String message
+  +int? statusCode
+}
+class PagedShoeList {
+  +reload()
+  -_onScroll()
+  -_loadMore()
+}
+class ShoeCard
+
+class User {
+  +int id
+  +String login
+  +String name
+  +String role
+  +bool blocked
+}
+class Shoe {
+  +int id
+  +String name
+  +String brand
+  +String category
+  +String gender
+  +int price
+  +int oldPrice
+  +List<String> sizes
+  +bool inStock
+  +double rating
+  +bool isFavorite
+}
+class Order {
+  +int id
+  +int userId
+  +int shoeId
+  +String size
+  +String phone
+  +String status
+  +String adminComment
+  +bool isNew
+}
+class Review {
+  +int id
+  +int shoeId
+  +int userId
+  +int rating
+  +String text
+}
+class ShoeFilter {
+  +String query
+  +String? category
+  +String? gender
+  +Set<String> brands
+  +String sort
+  +toQuery()
+}
+class ShoePage {
+  +List<Shoe> items
+  +int total
+}
+class CatalogMeta {
+  +List<String> brands
+  +List<String> sizes
+  +int minPrice
+  +int maxPrice
 }
 
-package services {
-  class ApiService <<singleton>> {
-    -_token: String?
-    +onSessionExpired: Function
-    +login() / register() / me() / logout()
-    +getShoes(filter, offset, limit): ShoePage
-    +saveShoe(shoe): Shoe
-    +deleteShoe() / restoreShoe() / purgeShoe()
-    +setFavorite(id, value)
-    +getReviews() / addReview()
-    +getOrders() / createOrder() / decideOrder()
-    +getUnreadCount() / markNotificationsRead()
-    +getUsers() / setUserBlocked() / getStats()
-    -_send(method, path, body, query)
-  }
-  class ApiException {
-    +message: String
-    +statusCode: int?
-  }
-  class StorageService <<static>> {
-    +getToken() / saveToken() / clearToken()
-    +getTheme() / saveTheme()
-    +getLastLogin() / saveLastLogin()
-    +getSearchHistory(userId)
-    +addSearchQuery(userId, q)
-  }
-}
+SplashScreen --> AuthProvider
+LoginScreen --> AuthProvider
+RegisterScreen --> AuthProvider
+LoginScreen --> StorageService
+HomeScreen --> PagedShoeList
+HomeScreen --> FilterSheet
+HomeScreen --> NotificationBell
+HomeScreen --> ApiService
+HomeScreen --> StorageService
+FavoritesScreen --> PagedShoeList
+FavoritesScreen --> ApiService
+ShoeDetailScreen --> ApiService
+ShoeDetailScreen --> AuthProvider
+OrdersScreen --> ApiService
+OrdersScreen --> NotificationProvider
+ProfileScreen --> ThemeProvider
+ProfileScreen --> ApiService
+NotificationBell --> NotificationProvider
+FilterSheet --> ShoeFilter
+FilterSheet --> CatalogMeta
+PagedShoeList --> ShoeCard
+PagedShoeList --> ShoePage
+ShoeCard --> Shoe
 
-package providers {
-  class AuthProvider <<ChangeNotifier>> {
-    +user: User?
-    +isAdmin: bool
-    +tryRestoreSession(): bool
-    +login() / register() / logout()
-  }
-  class NotificationProvider <<ChangeNotifier>> {
-    +unread: int
-    +hasFresh: bool
-    +start() / stop()
-    +refresh()
-    +markAllRead()
-  }
-  class ThemeProvider <<ChangeNotifier>> {
-    +mode: ThemeMode
-    +load() / setMode()
-  }
-}
-
-package styles {
-  class AppColors
-  class AppStyles {
-    +gapS..gapXXL
-    +radiusS..radiusL
-    +lightTheme / darkTheme
-    +input(label, icon)
-  }
-  class ShoeCategories
-}
-
-package screens {
-  class SplashScreen
-  class LoginScreen
-  class RegisterScreen
-  class HomeScreen
-  class FilterSheet
-  class ShoeDetailScreen
-  class ShoeFormScreen
-  class FavoritesScreen
-  class TrashScreen
-  class OrdersScreen
-  class UsersScreen
-  class ProfileScreen
-}
-
-package widgets {
-  class PagedShoeList {
-    +loader(offset, limit)
-    +reload()
-    -_loadMore()
-  }
-  class ShoeCard
-  class NotificationBell
-  class SneakerLoader
-  class AppDrawer
-}
-
-ApiService ..> ApiException : throws
-ApiService ..> StorageService
-ApiService ..> Shoe
-ApiService ..> Order
-ApiService ..> Review
-ApiService ..> User
 AuthProvider --> ApiService
-AuthProvider o-- User
+AuthProvider --> StorageService
 NotificationProvider --> ApiService
-ThemeProvider ..> StorageService
-HomeScreen *-- PagedShoeList
-HomeScreen ..> FilterSheet
-HomeScreen ..> ShoeFilter
-HomeScreen ..> NotificationBell
-HomeScreen ..> AppDrawer
-PagedShoeList ..> ShoeCard
-FavoritesScreen *-- PagedShoeList
-TrashScreen *-- PagedShoeList
-NotificationBell ..> NotificationProvider
-SplashScreen ..> AuthProvider
-ShoeDetailScreen ..> ShoeFormScreen
+ThemeProvider --> StorageService
+ApiService ..> ApiException : throws
+ApiService --> Shoe
+ApiService --> Order
+ApiService --> Review
+AuthProvider --> User
+
+ShoePage "1" o-- "0..*" Shoe : contains
+User "1" -- "0..*" Order : creates
+Shoe "1" -- "0..*" Order : reserved in
+Shoe "1" -- "0..*" Review : has
+User "1" -- "0..*" Review : writes
 @enduml
